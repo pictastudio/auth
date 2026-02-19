@@ -14,10 +14,10 @@ class ResetPasswordController
         $credentials = $request->validate([
             'token' => ['required', 'string'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', 'min:8'],
+            'password' => config('picta-auth.password_rules', ['required', 'string', 'confirmed', 'min:8']),
         ]);
 
-        $status = Password::broker(config('auth.library.password_broker', 'users'))
+        $status = Password::broker(config('picta-auth.password_broker', 'users'))
             ->reset($credentials, function ($user) use ($credentials): void {
                 $user->forceFill([
                     'password' => Hash::make($credentials['password']),

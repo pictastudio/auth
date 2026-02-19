@@ -42,7 +42,7 @@ php artisan vendor:publish --tag=auth-bruno
 
 ## Configuration
 
-Permissions are generated from `config/auth.php` under `auth.library.permissions`.
+Permissions are generated from `config/picta-auth.php` under `picta-auth.permissions`.
 
 ```php
 return [
@@ -67,6 +67,41 @@ return [
 ];
 ```
 
+For API-only projects, you can also point notification links to frontend routes:
+
+```php
+return [
+    'library' => [
+        'frontend_urls' => [
+            'reset_password' => env('AUTH_LIBRARY_FRONTEND_RESET_PASSWORD_URL'),
+            'email_verification' => env('AUTH_LIBRARY_FRONTEND_EMAIL_VERIFICATION_URL'),
+        ],
+    ],
+];
+```
+
+- `AUTH_LIBRARY_FRONTEND_RESET_PASSWORD_URL`: frontend page that receives `token` and `email` query params.
+- `AUTH_LIBRARY_FRONTEND_EMAIL_VERIFICATION_URL`: frontend page that receives signed verification query params (`id`, `hash`, `expires`, `signature`).
+- If `AUTH_LIBRARY_FRONTEND_RESET_PASSWORD_URL` is not set and no `password.reset` route exists, the package falls back to `APP_URL` + `picta-auth.routes.default_reset_password_path` (default: `/reset-password`).
+
+Password reset validation rules are configurable via `picta-auth.password_rules`:
+
+```php
+return [
+    'library' => [
+        'password_rules' => ['required', 'string', 'confirmed', 'min:12'],
+    ],
+];
+```
+
+If you publish the Bruno collection, create your local env file from the template:
+
+```bash
+cp bruno/auth/environments/Local.example.bru bruno/auth/environments/Local.bru
+```
+
+`bruno/auth/environments/Local.bru` is gitignored so personal values are not tracked.
+
 Generated permission names follow:
 
 ```text
@@ -87,7 +122,7 @@ Use the package trait on your User model to get:
 
 - Sanctum API tokens
 - Spatie roles/permissions support
-- Default guard resolution from `auth.library.guard`
+- Default guard resolution from `picta-auth.guard`
 - Convenience method: `$user->canAuthorize($model, $action)`
 
 ```php

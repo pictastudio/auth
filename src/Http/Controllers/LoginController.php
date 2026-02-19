@@ -15,7 +15,7 @@ class LoginController
             'token_name' => ['sometimes', 'string'],
         ]);
 
-        $guard = config('auth.library.guard', config('auth.defaults.guard', 'web'));
+        $guard = config('picta-auth.guard', config('auth.defaults.guard', 'web'));
         $provider = config("auth.guards.{$guard}.provider");
         $model = is_string($provider) ? config("auth.providers.{$provider}.model") : null;
 
@@ -40,8 +40,8 @@ class LoginController
             ], 500);
         }
 
-        $tokenName = $credentials['token_name'] ?? config('auth.library.sanctum.token_name', 'auth-token');
-        $abilities = config('auth.library.sanctum.abilities', ['*']);
+        $tokenName = $credentials['token_name'] ?? config('picta-auth.sanctum.token_name', 'auth-token');
+        $abilities = config('picta-auth.sanctum.abilities', ['*']);
 
         $token = $user->createToken($tokenName, is_array($abilities) ? $abilities : ['*']);
 

@@ -19,6 +19,6 @@ trait HasAuthFeatures
 
     protected function getDefaultGuardName(): string
     {
-        return config('auth.library.guard', config('auth.defaults.guard', 'web'));
+        return config('picta-auth.guard', config('auth.defaults.guard', 'web'));
     }
 }

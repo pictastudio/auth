@@ -13,8 +13,8 @@ if (!class_exists(Permission::class)) {
 }
 
 it('runs the command to generate permissions', function (): void {
-    config()->set('auth.library.permissions.models', ['post']);
-    config()->set('auth.library.permissions.actions', ['view']);
+    config()->set('picta-auth.permissions.models', ['post']);
+    config()->set('picta-auth.permissions.actions', ['view']);
 
     artisan('auth:permissions:generate')
         ->expectsOutput('Auth permissions generation completed.')

@@ -22,3 +22,9 @@ body:json {
     "token_name": "bruno-local"
   }
 }
+
+script:post-response {
+  if (res.status === 200 && res.body && res.body.token) {
+    bru.setEnvVar("token", res.body.token);
+  }
+}

@@ -152,6 +152,72 @@ it('sends a password reset link for existing users', function (): void {
     Notification::assertSentTo($user, ResetPassword::class);
 });
 
+it('builds reset password notification links from frontend route config', function (): void {
+    Notification::fake();
+
+    config()->set('picta-auth.frontend_urls.reset_password', 'https://frontend.example/reset-password');
+
+    $user = User::query()->create([
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => Hash::make('secret-password'),
+    ]);
+
+    postJson(route('auth.password.email'), [
+        'email' => 'john@example.com',
+    ])->assertOk();
+
+    Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user): bool {
+        $mailMessage = $notification->toMail($user);
+        $actionUrl = $mailMessage->actionUrl;
+        $query = [];
+
+        parse_str((string) parse_url($actionUrl, PHP_URL_QUERY), $query);
+
+        expect($actionUrl)->toStartWith('https://frontend.example/reset-password?')
+            ->and($query)->toHaveKeys(['token', 'email'])
+            ->and($query['email'])->toBe('john@example.com')
+            ->and($query['token'])->toBeString()->not->toBeEmpty();
+
+        return true;
+    });
+});
+
+it('builds reset password notification links without configured frontend route', function (): void {
+    Notification::fake();
+
+    config()->set('picta-auth.frontend_urls.reset_password', null);
+    config()->set('picta-auth.routes.default_reset_password_path', '/reset-password');
+
+    $user = User::query()->create([
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => Hash::make('secret-password'),
+    ]);
+
+    postJson(route('auth.password.email'), [
+        'email' => 'john@example.com',
+    ])->assertOk();
+
+    Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user): bool {
+        $mailMessage = $notification->toMail($user);
+        $actionUrl = $mailMessage->actionUrl;
+        $query = [];
+
+        parse_str((string) parse_url($actionUrl, PHP_URL_QUERY), $query);
+
+        expect($query)->toHaveKeys(['token', 'email'])
+            ->and($query['email'])->toBe('john@example.com')
+            ->and($query['token'])->toBeString()->not->toBeEmpty();
+
+        if (! app('router')->has('password.reset')) {
+            expect($actionUrl)->toStartWith(rtrim((string) config('app.url'), '/') . '/reset-password?');
+        }
+
+        return true;
+    });
+});
+
 it('returns an error when forgot password email does not exist', function (): void {
     Notification::fake();
 
@@ -172,6 +238,19 @@ it('validates reset password payload', function (): void {
     ])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['token']);
+});
+
+it('uses configurable password reset validation rules', function (): void {
+    config()->set('picta-auth.password_rules', ['required', 'string', 'confirmed', 'min:12']);
+
+    postJson(route('auth.password.reset'), [
+        'token' => 'some-token',
+        'email' => 'john@example.com',
+        'password' => 'short-pass',
+        'password_confirmation' => 'short-pass',
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['password']);
 });
 
 it('resets password with a valid reset token', function (): void {
@@ -237,6 +316,40 @@ it('sends email verification notification for unverified users', function (): vo
         ->assertJsonPath('message', 'Verification link sent.');
 
     Notification::assertSentTo($user, VerifyEmail::class);
+});
+
+it('builds email verification notification links from frontend route config', function (): void {
+    Notification::fake();
+
+    config()->set('picta-auth.frontend_urls.email_verification', 'https://frontend.example/verify-email');
+
+    $user = User::query()->create([
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => Hash::make('secret-password'),
+        'email_verified_at' => null,
+    ]);
+
+    $token = $user->createToken('api')->plainTextToken;
+
+    withHeader('Authorization', "Bearer {$token}")
+        ->postJson(route('auth.verification.send'))
+        ->assertOk();
+
+    Notification::assertSentTo($user, VerifyEmail::class, function (VerifyEmail $notification) use ($user): bool {
+        $mailMessage = $notification->toMail($user);
+        $actionUrl = $mailMessage->actionUrl;
+        $query = [];
+
+        parse_str((string) parse_url($actionUrl, PHP_URL_QUERY), $query);
+
+        expect($actionUrl)->toStartWith('https://frontend.example/verify-email?')
+            ->and($query)->toHaveKeys(['id', 'hash', 'expires', 'signature'])
+            ->and($query['id'])->toBe((string) $user->getKey())
+            ->and($query['hash'])->toBe(sha1($user->getEmailForVerification()));
+
+        return true;
+    });
 });
 
 it('returns early when user email is already verified', function (): void {

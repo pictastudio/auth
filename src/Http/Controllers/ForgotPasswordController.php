@@ -13,7 +13,7 @@ class ForgotPasswordController
             'email' => ['required', 'email'],
         ]);
 
-        $status = Password::broker(config('auth.library.password_broker', 'users'))
+        $status = Password::broker(config('picta-auth.password_broker', 'users'))
             ->sendResetLink(['email' => $request->string('email')->toString()]);
 
         return $status === Password::RESET_LINK_SENT

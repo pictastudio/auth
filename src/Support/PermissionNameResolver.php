@@ -12,7 +12,7 @@ class PermissionNameResolver
      */
     public function actions(): array
     {
-        $actions = config('auth.library.permissions.actions', []);
+        $actions = config('picta-auth.permissions.actions', []);
 
         return array_values(array_unique(array_filter($actions, fn (mixed $action): bool => is_string($action) && $action !== '')));
     }
@@ -22,7 +22,7 @@ class PermissionNameResolver
      */
     public function modelNames(): array
     {
-        $models = config('auth.library.permissions.models', []);
+        $models = config('picta-auth.permissions.models', []);
         $names = [];
 
         foreach ($models as $key => $value) {
@@ -55,12 +55,12 @@ class PermissionNameResolver
 
     public function guard(): string
     {
-        return config('auth.library.guard', config('auth.defaults.guard', 'web'));
+        return config('picta-auth.guard', config('auth.defaults.guard', 'web'));
     }
 
     private function delimiter(): string
     {
-        $delimiter = config('auth.library.permissions.delimiter', ':');
+        $delimiter = config('picta-auth.permissions.delimiter', ':');
 
         return is_string($delimiter) && $delimiter !== '' ? $delimiter : ':';
     }
@@ -69,7 +69,7 @@ class PermissionNameResolver
     {
         $className = is_object($model) ? $model::class : $model;
 
-        $configured = config('auth.library.permissions.models', []);
+        $configured = config('picta-auth.permissions.models', []);
 
         foreach ($configured as $alias => $configuredModel) {
             if (!is_string($configuredModel)) {

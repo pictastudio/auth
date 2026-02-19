@@ -13,11 +13,11 @@ if (!class_exists(Permission::class) || !class_exists(Role::class) || !trait_exi
 }
 
 it('generates configured permissions and default roles without duplicating existing records', function (): void {
-    config()->set('auth.library.permissions.models', [
+    config()->set('picta-auth.permissions.models', [
         'post' => Post::class,
         User::class,
     ]);
-    config()->set('auth.library.permissions.actions', ['view', 'create']);
+    config()->set('picta-auth.permissions.actions', ['view', 'create']);
 
     $summary = app(GeneratePermissionsAction::class)->execute();
 
@@ -40,10 +40,10 @@ it('generates configured permissions and default roles without duplicating exist
 });
 
 it('authorizes using the helper with explicit and default authenticated user', function (): void {
-    config()->set('auth.library.permissions.models', [
+    config()->set('picta-auth.permissions.models', [
         'post' => Post::class,
     ]);
-    config()->set('auth.library.permissions.actions', ['view', 'delete']);
+    config()->set('picta-auth.permissions.actions', ['view', 'delete']);
 
     app(GeneratePermissionsAction::class)->execute();
 

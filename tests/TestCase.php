@@ -86,8 +86,8 @@ class TestCase extends Orchestra
         ]);
         config()->set('permission.teams', false);
 
-        config()->set('auth.library.guard', 'web');
-        config()->set('auth.library.password_broker', 'users');
+        config()->set('picta-auth.guard', 'web');
+        config()->set('picta-auth.password_broker', 'users');
     }
 
     private function createUsersTable(): void

@@ -102,7 +102,7 @@ class GeneratePermissionsAction
      */
     private function rolesFromConfig(): array
     {
-        $configured = config('auth.library.roles', []);
+        $configured = config('picta-auth.roles', []);
 
         if (!is_array($configured)) {
             return [];
