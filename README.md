@@ -107,6 +107,27 @@ Mounted under `/auth` by default:
 - `POST /auth/email/verification-notification`
 - `GET /auth/verify-email/{id}/{hash}`
 
+## Morph Map
+
+Inside your AppServiceProvider add this to ensure the relation morph map is registered:
+
+```php
+use Illuminate\Support\ServiceProvider;
+use PictaStudio\Auth\AuthServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use App\Models\User;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function boot()
+    {
+        Relation::morphMap([
+            'user' => User::class,
+        ]);
+    }
+}
+```
+
 ## Testing
 
 ```bash

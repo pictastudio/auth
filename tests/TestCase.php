@@ -16,6 +16,7 @@ class TestCase extends Orchestra
 
         $this->createUsersTable();
         $this->createSanctumTable();
+        $this->createPasswordResetTokensTable();
         $this->createPermissionTables();
 
         if (class_exists(\Spatie\Permission\PermissionRegistrar::class)) {
@@ -42,6 +43,8 @@ class TestCase extends Orchestra
 
     protected function getEnvironmentSetUp($app): void
     {
+        config()->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
+
         config()->set('database.default', 'testing');
         config()->set('database.connections.testing', [
             'driver' => 'sqlite',
@@ -58,6 +61,12 @@ class TestCase extends Orchestra
         config()->set('auth.providers.users', [
             'driver' => 'eloquent',
             'model' => User::class,
+        ]);
+        config()->set('auth.passwords.users', [
+            'provider' => 'users',
+            'table' => 'password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
         ]);
 
         config()->set('permission.models.permission', \Spatie\Permission\Models\Permission::class);
@@ -105,6 +114,15 @@ class TestCase extends Orchestra
             $table->timestamp('last_used_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
+        });
+    }
+
+    private function createPasswordResetTokensTable(): void
+    {
+        Schema::create('password_reset_tokens', function (Blueprint $table): void {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
         });
     }
 
