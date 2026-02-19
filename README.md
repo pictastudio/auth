@@ -28,6 +28,12 @@ Publish config:
 php artisan vendor:publish --tag=auth-config
 ```
 
+Publish Bruno API collection:
+
+```bash
+php artisan vendor:publish --tag=auth-bruno
+```
+
 ## Configuration
 
 Permissions are generated from `config/auth.php` under `auth.library.permissions`.

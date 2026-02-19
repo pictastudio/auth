@@ -24,6 +24,10 @@ class AuthServiceProvider extends ServiceProvider
             __DIR__ . '/../config/auth.php' => config_path('auth.php'),
         ], 'auth-config');
 
+        $this->publishes([
+            __DIR__ . '/../bruno/auth' => base_path('bruno/auth'),
+        ], 'auth-bruno');
+
         $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
 
         if ($this->app->runningInConsole()) {

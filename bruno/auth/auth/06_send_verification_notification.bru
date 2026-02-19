@@ -1,0 +1,17 @@
+meta {
+  name: Send verification notification
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/email/verification-notification
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

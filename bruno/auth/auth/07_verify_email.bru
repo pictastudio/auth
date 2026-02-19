@@ -1,0 +1,27 @@
+meta {
+  name: Verify email
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/verify-email/:id/:hash
+  body: none
+  auth: none
+}
+
+params:path {
+  id: {{userId}}
+  hash: {{verifyHash}}
+}
+
+params:query {
+  expires: {{verifyExpires}}
+  signature: {{verifySignature}}
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
