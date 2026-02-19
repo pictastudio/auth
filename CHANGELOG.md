@@ -1,4 +1,3 @@
 # Changelog
 
-All notable changes to `translatable` will be documented in this file.
-
+All notable changes to `auth` will be documented in this file.

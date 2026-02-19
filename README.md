@@ -1,57 +1,114 @@
-# This is my package translatable
+# pictastudio/auth
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/pictastudio/translatable.svg?style=flat-square)](https://packagist.org/packages/pictastudio/translatable)
-[![Tests](https://img.shields.io/github/actions/workflow/status/pictastudio/translatable/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/pictastudio/translatable/actions/workflows/run-tests.yml)
-[![Total Downloads](https://img.shields.io/packagist/dt/pictastudio/translatable.svg?style=flat-square)](https://packagist.org/packages/pictastudio/translatable)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/pictastudio/auth.svg?style=flat-square)](https://packagist.org/packages/pictastudio/auth)
+[![Total Downloads](https://img.shields.io/packagist/dt/pictastudio/auth.svg?style=flat-square)](https://packagist.org/packages/pictastudio/auth)
 
-This is where your description should go. Try and limit it to a paragraph or two. Consider adding a small example.
+Opinionated API authentication and authorization for Laravel using Sanctum and Spatie roles/permissions.
 
-## Support us
+## Features
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/translatable.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/translatable)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+- Common API auth routes: login, logout, current user, forgot/reset password, email verification.
+- Config-driven permission generation with pattern `{model}:{action}`.
+- Config-driven role bootstrap with defaults:
+  - `root` (all permissions)
+  - `admin` (all permissions)
+  - `user` (no permissions assigned by default)
+- Global helper `auth_authorize(...)` to run authorization checks from anywhere.
+- User model trait to bootstrap Sanctum + Spatie integration quickly.
 
 ## Installation
 
-You can install the package via composer:
+```bash
+composer require pictastudio/auth
+```
+
+Publish config:
 
 ```bash
-composer require pictastudio/translatable
+php artisan vendor:publish --tag=auth-config
 ```
 
-## Usage
+## Configuration
+
+Permissions are generated from `config/auth.php` under `auth.library.permissions`.
 
 ```php
-$skeleton = new PictaStudio\Translatable();
-echo $skeleton->echoPhrase('Hello, PictaStudio!');
+return [
+    'library' => [
+        'permissions' => [
+            'models' => [
+                'post' => \App\Models\Post::class,
+                \App\Models\Comment::class,
+            ],
+            'actions' => [
+                'view-any',
+                'view',
+                'create',
+                'show',
+                'update',
+                'delete',
+                'force-delete',
+                'restore',
+            ],
+        ],
+    ],
+];
 ```
+
+Generated permission names follow:
+
+```text
+{model}:{action}
+```
+
+## Generate Permissions and Roles
+
+```bash
+php artisan auth:permissions:generate
+```
+
+This command keeps existing records and only creates missing permissions/roles.
+
+## User Model Trait
+
+Use the package trait on your User model to get:
+
+- Sanctum API tokens
+- Spatie roles/permissions support
+- Default guard resolution from `auth.library.guard`
+- Convenience method: `$user->canAuthorize($model, $action)`
+
+```php
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use PictaStudio\Auth\Concerns\HasAuthFeatures;
+
+class User extends Authenticatable
+{
+    use HasAuthFeatures;
+}
+```
+
+## Global Helper
+
+```php
+auth_authorize(\App\Models\Post::class, 'view', $user);
+auth_authorize(\App\Models\Post::class, 'update'); // defaults to auth()->guard()->user()
+```
+
+## API Routes
+
+Mounted under `/auth` by default:
+
+- `POST /auth/login`
+- `GET /auth/me`
+- `POST /auth/logout`
+- `POST /auth/forgot-password`
+- `POST /auth/reset-password`
+- `POST /auth/email/verification-notification`
+- `GET /auth/verify-email/{id}/{hash}`
 
 ## Testing
 
 ```bash
 composer test
 ```
-
-## Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
-
-## Contributing
-
-Please see [CONTRIBUTING](https://github.com/spatie/.github/blob/main/CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [Frameck](https://github.com/Frameck)
-- [All Contributors](../../contributors)
-
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.

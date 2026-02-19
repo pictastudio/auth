@@ -1,12 +1,16 @@
 {
-    "name": "pictastudio/translatable",
-    "description": "make your models translatable",
+    "name": "pictastudio/auth",
+    "description": "Opinionated API authentication and authorization package for Laravel Sanctum with Spatie roles and permissions.",
     "keywords": [
         "Picta Studio",
         "laravel",
-        "translatable"
+        "auth",
+        "sanctum",
+        "spatie",
+        "permissions",
+        "roles"
     ],
-    "homepage": "https://github.com/pictastudio/translatable",
+    "homepage": "https://github.com/pictastudio/auth",
     "license": "MIT",
     "authors": [
         {
@@ -21,7 +25,15 @@
         }
     ],
     "require": {
-        "php": "^8.4"
+        "php": "^8.4",
+        "illuminate/auth": "^12.0",
+        "illuminate/console": "^12.0",
+        "illuminate/contracts": "^12.0",
+        "illuminate/http": "^12.0",
+        "illuminate/routing": "^12.0",
+        "illuminate/support": "^12.0",
+        "laravel/sanctum": "^4.0",
+        "spatie/laravel-permission": "^6.0"
     },
     "require-dev": {
         "orchestra/testbench": "^10.4",
@@ -31,18 +43,28 @@
     },
     "autoload": {
         "psr-4": {
-            "PictaStudio\\Translatable\\": "src"
-        }
+            "PictaStudio\\Auth\\": "src"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
-            "PictaStudio\\Translatable\\Tests\\": "tests"
+            "PictaStudio\\Auth\\Tests\\": "tests"
         }
     },
     "scripts": {
         "test": "vendor/bin/pest",
         "test-coverage": "vendor/bin/pest --coverage",
         "format": "vendor/bin/pint"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "PictaStudio\\Auth\\AuthServiceProvider"
+            ]
+        }
     },
     "config": {
         "sort-packages": true,
