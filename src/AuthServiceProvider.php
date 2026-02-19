@@ -25,6 +25,10 @@ class AuthServiceProvider extends ServiceProvider
         ], 'auth-config');
 
         $this->publishes([
+            __DIR__ . '/../database/migrations/create_personal_access_tokens_table.php' => database_path('migrations/' . date('Y_m_d_His') . '_create_personal_access_tokens_table.php'),
+        ], 'auth-migrations');
+
+        $this->publishes([
             __DIR__ . '/../bruno/auth' => base_path('bruno/auth'),
         ], 'auth-bruno');
 

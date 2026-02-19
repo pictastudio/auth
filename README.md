@@ -28,6 +28,12 @@ Publish config:
 php artisan vendor:publish --tag=auth-config
 ```
 
+Publish Sanctum personal access tokens migration:
+
+```bash
+php artisan vendor:publish --tag=auth-migrations
+```
+
 Publish Bruno API collection:
 
 ```bash

@@ -37,7 +37,7 @@ return [
         ],
 
         'routes' => [
-            'prefix' => 'auth',
+            'prefix' => 'api/auth',
             'middleware' => ['api'],
             'auth_middleware' => ['api', 'auth:sanctum'],
             'verification_middleware' => ['api', 'auth:sanctum', 'signed', 'throttle:6,1'],
