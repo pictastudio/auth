@@ -2,8 +2,7 @@
 
 namespace PictaStudio\Auth\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 
 class LogoutController
 {

@@ -8,7 +8,7 @@ class Authorization
 
     public function allows(mixed $user, string|object $model, string $action): bool
     {
-        if ($user === null || ! method_exists($user, 'can')) {
+        if ($user === null || !method_exists($user, 'can')) {
             return false;
         }
 

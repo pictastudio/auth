@@ -1,13 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use PictaStudio\Auth\Http\Controllers\AuthenticatedUserController;
-use PictaStudio\Auth\Http\Controllers\EmailVerificationNotificationController;
-use PictaStudio\Auth\Http\Controllers\ForgotPasswordController;
-use PictaStudio\Auth\Http\Controllers\LoginController;
-use PictaStudio\Auth\Http\Controllers\LogoutController;
-use PictaStudio\Auth\Http\Controllers\ResetPasswordController;
-use PictaStudio\Auth\Http\Controllers\VerifyEmailController;
+use PictaStudio\Auth\Http\Controllers\{AuthenticatedUserController, EmailVerificationNotificationController, ForgotPasswordController, LoginController, LogoutController, ResetPasswordController, VerifyEmailController};
 
 Route::prefix(config('auth.library.routes.prefix', 'auth'))
     ->middleware(config('auth.library.routes.middleware', ['api']))

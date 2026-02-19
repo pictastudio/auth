@@ -1,17 +1,11 @@
 <?php
 
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Auth\Notifications\{ResetPassword, VerifyEmail};
+use Illuminate\Support\Facades\{Hash, Notification, Password, URL};
 use Laravel\Sanctum\PersonalAccessToken;
-use PictaStudio\Auth\Tests\Support\Models\User;
-use PictaStudio\Auth\Tests\Support\Models\UserWithoutSanctum;
-use PictaStudio\Auth\Tests\Support\Models\UserWithoutVerification;
+use PictaStudio\Auth\Tests\Support\Models\{User, UserWithoutSanctum, UserWithoutVerification};
 
-use function Pest\Laravel\{postJson, getJson, withHeader};
+use function Pest\Laravel\{getJson, postJson, withHeader};
 
 it('validates login payload', function (): void {
     postJson(route('auth.login'))

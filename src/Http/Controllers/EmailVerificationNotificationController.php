@@ -2,8 +2,7 @@
 
 namespace PictaStudio\Auth\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 
 class EmailVerificationNotificationController
 {
@@ -19,7 +18,7 @@ class EmailVerificationNotificationController
             return response()->json(['message' => 'Email already verified.']);
         }
 
-        if (! method_exists($user, 'sendEmailVerificationNotification')) {
+        if (!method_exists($user, 'sendEmailVerificationNotification')) {
             return response()->json(['message' => 'Email verification is not available for this model.'], 500);
         }
 

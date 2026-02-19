@@ -1,12 +1,10 @@
 <?php
 
 use PictaStudio\Auth\Actions\GeneratePermissionsAction;
-use PictaStudio\Auth\Tests\Support\Models\Post;
-use PictaStudio\Auth\Tests\Support\Models\User;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use PictaStudio\Auth\Tests\Support\Models\{Post, User};
+use Spatie\Permission\Models\{Permission, Role};
 
-if (! class_exists(Permission::class) || ! class_exists(Role::class) || ! trait_exists('Spatie\\Permission\\Traits\\HasRoles')) {
+if (!class_exists(Permission::class) || !class_exists(Role::class) || !trait_exists('Spatie\\Permission\\Traits\\HasRoles')) {
     test('spatie/laravel-permission is required for permission tests', function (): void {
         $this->markTestSkipped('Install spatie/laravel-permission to run this test.');
     });

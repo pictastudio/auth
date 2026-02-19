@@ -27,7 +27,7 @@ class PermissionNameResolver
 
         foreach ($models as $key => $value) {
             if (is_int($key)) {
-                if (! is_string($value) || $value === '') {
+                if (!is_string($value) || $value === '') {
                     continue;
                 }
 
@@ -72,11 +72,11 @@ class PermissionNameResolver
         $configured = config('auth.library.permissions.models', []);
 
         foreach ($configured as $alias => $configuredModel) {
-            if (! is_string($configuredModel)) {
+            if (!is_string($configuredModel)) {
                 continue;
             }
 
-            if (ltrim($configuredModel, '\\') !== ltrim($className, '\\')) {
+            if (mb_ltrim($configuredModel, '\\') !== mb_ltrim($className, '\\')) {
                 continue;
             }
 

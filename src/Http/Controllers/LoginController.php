@@ -2,8 +2,7 @@
 
 namespace PictaStudio\Auth\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Hash;
 
 class LoginController
@@ -20,7 +19,7 @@ class LoginController
         $provider = config("auth.guards.{$guard}.provider");
         $model = is_string($provider) ? config("auth.providers.{$provider}.model") : null;
 
-        if (! is_string($model) || ! class_exists($model)) {
+        if (!is_string($model) || !class_exists($model)) {
             return response()->json([
                 'message' => 'Unable to resolve the auth model for the configured guard.',
             ], 500);
@@ -29,13 +28,13 @@ class LoginController
         /** @var \Illuminate\Contracts\Auth\Authenticatable|null $user */
         $user = $model::query()->where('email', $credentials['email'])->first();
 
-        if ($user === null || ! Hash::check($credentials['password'], $user->password)) {
+        if ($user === null || !Hash::check($credentials['password'], $user->password)) {
             return response()->json([
                 'message' => 'The provided credentials are invalid.',
             ], 422);
         }
 
-        if (! method_exists($user, 'createToken')) {
+        if (!method_exists($user, 'createToken')) {
             return response()->json([
                 'message' => 'The auth model must use Laravel Sanctum HasApiTokens.',
             ], 500);

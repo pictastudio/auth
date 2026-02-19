@@ -3,8 +3,7 @@
 namespace PictaStudio\Auth\Actions;
 
 use PictaStudio\Auth\Support\PermissionNameResolver;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\{Permission, Role};
 
 class GeneratePermissionsAction
 {
@@ -73,7 +72,7 @@ class GeneratePermissionsAction
 
             $role = Role::findOrCreate($roleName, $guard);
 
-            if (! ($config['all_permissions'] ?? false)) {
+            if (!($config['all_permissions'] ?? false)) {
                 continue;
             }
 
@@ -105,14 +104,14 @@ class GeneratePermissionsAction
     {
         $configured = config('auth.library.roles', []);
 
-        if (! is_array($configured)) {
+        if (!is_array($configured)) {
             return [];
         }
 
         $roles = [];
 
         foreach ($configured as $roleName => $roleConfig) {
-            if (! is_string($roleName) || $roleName === '') {
+            if (!is_string($roleName) || $roleName === '') {
                 continue;
             }
 

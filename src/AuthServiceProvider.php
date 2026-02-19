@@ -5,8 +5,7 @@ namespace PictaStudio\Auth;
 use Illuminate\Support\ServiceProvider;
 use PictaStudio\Auth\Actions\GeneratePermissionsAction;
 use PictaStudio\Auth\Console\GeneratePermissionsCommand;
-use PictaStudio\Auth\Support\Authorization;
-use PictaStudio\Auth\Support\PermissionNameResolver;
+use PictaStudio\Auth\Support\{Authorization, PermissionNameResolver};
 
 class AuthServiceProvider extends ServiceProvider
 {
