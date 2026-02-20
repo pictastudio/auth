@@ -15,10 +15,13 @@ if (!class_exists(Permission::class)) {
 it('runs the command to generate permissions', function (): void {
     config()->set('picta-auth.permissions.models', ['post']);
     config()->set('picta-auth.permissions.actions', ['view']);
+    config()->set('picta-auth.roles', [
+        'admin' => ['all_permissions' => true]
+    ]);
 
     artisan('auth:permissions:generate')
-        ->expectsOutput('Auth permissions generation completed.')
-        ->assertSuccessful();
+        ->assertSuccessful()
+        ->expectsOutputToContain('Auth permissions generation completed.');
 
     expect(Permission::query()->where('name', 'post:view')->exists())->toBeTrue();
 });
