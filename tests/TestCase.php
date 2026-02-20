@@ -44,6 +44,7 @@ class TestCase extends Orchestra
     protected function getEnvironmentSetUp($app): void
     {
         config()->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
+        config()->set('session.driver', 'array');
 
         config()->set('database.default', 'testing');
         config()->set('database.connections.testing', [

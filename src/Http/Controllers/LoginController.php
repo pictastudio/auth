@@ -3,7 +3,8 @@
 namespace PictaStudio\Auth\Http\Controllers;
 
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\{Auth, Hash};
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 class LoginController
 {
@@ -13,6 +14,7 @@ class LoginController
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
             'token_name' => ['sometimes', 'string'],
+            'issue_token' => ['sometimes', 'boolean'],
         ]);
 
         $guard = config('picta-auth.guard', config('auth.defaults.guard', 'web'));
@@ -34,6 +36,35 @@ class LoginController
             ], 422);
         }
 
+        $configuredIssueToken = config('picta-auth.sanctum.issue_token_by_default');
+        $defaultIssueToken = is_bool($configuredIssueToken)
+            ? $configuredIssueToken
+            : !EnsureFrontendRequestsAreStateful::fromFrontend($request);
+        $issueToken = $request->has('issue_token')
+            ? $request->boolean('issue_token')
+            : $defaultIssueToken;
+
+        if (!$issueToken) {
+            $authGuard = Auth::guard($guard);
+
+            if (!method_exists($authGuard, 'login')) {
+                return response()->json([
+                    'message' => 'The configured guard does not support session authentication.',
+                ], 500);
+            }
+
+            $authGuard->login($user);
+
+            if ($request->hasSession()) {
+                $request->session()->regenerate();
+            }
+
+            return response()->json([
+                'authenticated_via' => 'cookie',
+                'user' => $user,
+            ]);
+        }
+
         if (!method_exists($user, 'createToken')) {
             return response()->json([
                 'message' => 'The auth model must use Laravel Sanctum HasApiTokens.',
@@ -46,6 +77,7 @@ class LoginController
         $token = $user->createToken($tokenName, is_array($abilities) ? $abilities : ['*']);
 
         return response()->json([
+            'authenticated_via' => 'token',
             'token_type' => 'Bearer',
             'token' => $token->plainTextToken,
             'user' => $user,

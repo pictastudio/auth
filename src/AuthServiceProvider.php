@@ -4,124 +4,14 @@ namespace PictaStudio\Auth;
 
 use Illuminate\Auth\Notifications\{ResetPassword, VerifyEmail};
 use Illuminate\Routing\Router;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 use PictaStudio\Auth\Actions\GeneratePermissionsAction;
-use PictaStudio\Auth\Console\GeneratePermissionsCommand;
+use PictaStudio\Auth\Console\Commands\{GeneratePermissionsCommand, InstallCommand};
 use PictaStudio\Auth\Support\{Authorization, PermissionNameResolver};
 
 class AuthServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-        $this->mergeConfigFrom(__DIR__ . '/../config/picta-auth.php', 'picta-auth');
-
-        $this->app->singleton(PermissionNameResolver::class);
-        $this->app->singleton(Authorization::class);
-        $this->app->singleton(GeneratePermissionsAction::class);
-    }
-
-    public function boot(): void
-    {
-        $this->publishes([
-            __DIR__ . '/../config/picta-auth.php' => config_path('picta-auth.php'),
-        ], 'auth-config');
-
-        $this->publishes([
-            __DIR__ . '/../database/migrations/create_personal_access_tokens_table.php' => database_path('migrations/' . date('Y_m_d_His') . '_create_personal_access_tokens_table.php'),
-        ], 'auth-migrations');
-
-        $this->publishes([
-            __DIR__ . '/../bruno/auth' => base_path('bruno/auth'),
-        ], 'auth-bruno');
-
-        $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
-        $this->configureNotificationFrontendUrls();
-
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                GeneratePermissionsCommand::class,
-            ]);
-        }
-    }
-
-    private function configureNotificationFrontendUrls(): void
-    {
-        $this->configureResetPasswordFrontendUrl();
-        $this->configureEmailVerificationFrontendUrl();
-    }
-
-    private function configureResetPasswordFrontendUrl(): void
-    {
-        ResetPassword::createUrlUsing(function ($notifiable, string $token): string {
-            $frontendUrl = trim((string) config('picta-auth.frontend_urls.reset_password', ''));
-
-            if ($frontendUrl === '') {
-                return $this->resolveResetPasswordUrl($notifiable, $token);
-            }
-
-            return self::buildUrlWithQuery($frontendUrl, [
-                'token' => $token,
-                'email' => $notifiable->getEmailForPasswordReset(),
-            ]);
-        });
-    }
-
-    private function resolveResetPasswordUrl($notifiable, string $token): string
-    {
-        /** @var Router $router */
-        $router = $this->app->make('router');
-
-        if ($router->has('password.reset')) {
-            return url(route('password.reset', [
-                'token' => $token,
-                'email' => $notifiable->getEmailForPasswordReset(),
-            ], false));
-        }
-
-        $defaultResetPath = trim((string) config('picta-auth.routes.default_reset_password_path', '/reset-password'));
-        $baseUrl = rtrim((string) config('app.url', ''), '/');
-        $path = '/' . ltrim($defaultResetPath, '/');
-
-        return self::buildUrlWithQuery($baseUrl . $path, [
-            'token' => $token,
-            'email' => $notifiable->getEmailForPasswordReset(),
-        ]);
-    }
-
-    private function configureEmailVerificationFrontendUrl(): void
-    {
-        VerifyEmail::createUrlUsing(function ($notifiable): string {
-            $verificationParameters = [
-                'id' => (string) $notifiable->getKey(),
-                'hash' => sha1($notifiable->getEmailForVerification()),
-            ];
-
-            $verificationUrl = URL::temporarySignedRoute(
-                'auth.verification.verify',
-                now()->addMinutes((int) config('auth.verification.expire', 60)),
-                $verificationParameters
-            );
-
-            $frontendUrl = trim((string) config('picta-auth.frontend_urls.email_verification', ''));
-
-            if ($frontendUrl === '') {
-                return $verificationUrl;
-            }
-
-            $query = $verificationParameters;
-            $verificationQuery = parse_url($verificationUrl, PHP_URL_QUERY);
-
-            if (is_string($verificationQuery) && $verificationQuery !== '') {
-                $signedQuery = [];
-                parse_str($verificationQuery, $signedQuery);
-                $query = array_merge($query, $signedQuery);
-            }
-
-            return self::buildUrlWithQuery($frontendUrl, $query);
-        });
-    }
-
     private static function buildUrlWithQuery(string $baseUrl, array $query): string
     {
         $parts = parse_url($baseUrl);
@@ -156,5 +46,112 @@ class AuthServiceProvider extends ServiceProvider
         $fragment = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
 
         return "{$scheme}{$auth}{$host}{$port}{$path}{$query}{$fragment}";
+    }
+
+    public function register(): void
+    {
+        $this->mergeConfigFrom(__DIR__ . '/../config/picta-auth.php', 'picta-auth');
+
+        $this->app->singleton(PermissionNameResolver::class);
+        $this->app->singleton(Authorization::class);
+        $this->app->singleton(GeneratePermissionsAction::class);
+    }
+
+    public function boot(): void
+    {
+        $this->publishes([
+            __DIR__ . '/../config/picta-auth.php' => config_path('picta-auth.php'),
+        ], 'auth-config');
+
+        $this->publishes([
+            __DIR__ . '/../bruno/auth' => base_path('bruno/auth'),
+        ], 'auth-bruno');
+
+        $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+        $this->configureNotificationFrontendUrls();
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                GeneratePermissionsCommand::class,
+                InstallCommand::class,
+            ]);
+        }
+    }
+
+    private function configureNotificationFrontendUrls(): void
+    {
+        $this->configureResetPasswordFrontendUrl();
+        $this->configureEmailVerificationFrontendUrl();
+    }
+
+    private function configureResetPasswordFrontendUrl(): void
+    {
+        ResetPassword::createUrlUsing(function ($notifiable, string $token): string {
+            $frontendUrl = mb_trim((string) config('picta-auth.frontend_urls.reset_password', ''));
+
+            if ($frontendUrl === '') {
+                return $this->resolveResetPasswordUrl($notifiable, $token);
+            }
+
+            return self::buildUrlWithQuery($frontendUrl, [
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ]);
+        });
+    }
+
+    private function resolveResetPasswordUrl($notifiable, string $token): string
+    {
+        /** @var Router $router */
+        $router = $this->app->make('router');
+
+        if ($router->has('password.reset')) {
+            return url(route('password.reset', [
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ], false));
+        }
+
+        $defaultResetPath = mb_trim((string) config('picta-auth.routes.default_reset_password_path', '/reset-password'));
+        $baseUrl = mb_rtrim((string) config('app.url', ''), '/');
+        $path = '/' . mb_ltrim($defaultResetPath, '/');
+
+        return self::buildUrlWithQuery($baseUrl . $path, [
+            'token' => $token,
+            'email' => $notifiable->getEmailForPasswordReset(),
+        ]);
+    }
+
+    private function configureEmailVerificationFrontendUrl(): void
+    {
+        VerifyEmail::createUrlUsing(function ($notifiable): string {
+            $verificationParameters = [
+                'id' => (string) $notifiable->getKey(),
+                'hash' => sha1($notifiable->getEmailForVerification()),
+            ];
+
+            $verificationUrl = URL::temporarySignedRoute(
+                'auth.verification.verify',
+                now()->addMinutes((int) config('auth.verification.expire', 60)),
+                $verificationParameters
+            );
+
+            $frontendUrl = mb_trim((string) config('picta-auth.frontend_urls.email_verification', ''));
+
+            if ($frontendUrl === '') {
+                return $verificationUrl;
+            }
+
+            $query = $verificationParameters;
+            $verificationQuery = parse_url($verificationUrl, PHP_URL_QUERY);
+
+            if (is_string($verificationQuery) && $verificationQuery !== '') {
+                $signedQuery = [];
+                parse_str($verificationQuery, $signedQuery);
+                $query = array_merge($query, $signedQuery);
+            }
+
+            return self::buildUrlWithQuery($frontendUrl, $query);
+        });
     }
 }

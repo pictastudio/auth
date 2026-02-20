@@ -71,16 +71,71 @@ it('logs in and creates a sanctum token', function (): void {
 
     $response->assertOk()
         ->assertJsonPath('token_type', 'Bearer')
-        ->assertJsonPath('user.id', $user->id);
+        ->assertJsonPath('user.id', $user->getKey());
 
     expect($response->json('token'))->toBeString()->not->toBeEmpty();
 
     $token = PersonalAccessToken::query()->first();
 
     expect($token)->not->toBeNull()
-        ->and($token?->tokenable_id)->toBe($user->id)
+        ->and($token?->tokenable_id)->toBe($user->getKey())
         ->and($token?->tokenable_type)->toBe(User::class)
         ->and($token?->name)->toBe('mobile-device');
+});
+
+it('logs in with cookie auth by default for stateful frontend requests', function (): void {
+    config()->set('sanctum.stateful', ['frontend.test']);
+
+    $user = User::query()->create([
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => Hash::make('secret-password'),
+    ]);
+
+    postJson(route('auth.login'), [
+        'email' => 'john@example.com',
+        'password' => 'secret-password',
+    ], [
+        'Origin' => 'https://frontend.test',
+    ])
+        ->assertOk()
+        ->assertJsonPath('authenticated_via', 'cookie')
+        ->assertJsonPath('user.id', $user->getKey());
+
+    expect(PersonalAccessToken::query()->count())->toBe(0);
+
+    getJson(route('auth.me'), [
+        'Origin' => 'https://frontend.test',
+    ])
+        ->assertOk()
+        ->assertJsonPath('user.id', $user->getKey());
+});
+
+it('can force token issuance for stateful frontend requests', function (): void {
+    config()->set('sanctum.stateful', ['frontend.test']);
+
+    $user = User::query()->create([
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => Hash::make('secret-password'),
+    ]);
+
+    $response = postJson(route('auth.login'), [
+        'email' => 'john@example.com',
+        'password' => 'secret-password',
+        'issue_token' => true,
+        'token_name' => 'frontend-device',
+    ], [
+        'Origin' => 'https://frontend.test',
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('authenticated_via', 'token')
+        ->assertJsonPath('token_type', 'Bearer')
+        ->assertJsonPath('user.id', $user->getKey());
+
+    expect($response->json('token'))->toBeString()->not->toBeEmpty()
+        ->and(PersonalAccessToken::query()->count())->toBe(1);
 });
 
 it('requires authentication on me route', function (): void {
@@ -100,7 +155,7 @@ it('returns the authenticated user on me route', function (): void {
     withHeader('Authorization', "Bearer {$token}")
         ->getJson(route('auth.me'))
         ->assertOk()
-        ->assertJsonPath('user.id', $user->id)
+        ->assertJsonPath('user.id', $user->getKey())
         ->assertJsonPath('user.email', 'john@example.com');
 });
 
@@ -126,6 +181,31 @@ it('logs out and deletes the current access token', function (): void {
         ->assertJsonPath('message', 'Logged out.');
 
     expect(PersonalAccessToken::query()->count())->toBe(0);
+});
+
+it('logs out and invalidates cookie-based sessions', function (): void {
+    config()->set('sanctum.stateful', ['frontend.test']);
+
+    User::query()->create([
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => Hash::make('secret-password'),
+    ]);
+
+    postJson(route('auth.login'), [
+        'email' => 'john@example.com',
+        'password' => 'secret-password',
+    ], [
+        'Origin' => 'https://frontend.test',
+    ])->assertOk();
+
+    postJson(route('auth.logout'), [], [
+        'Origin' => 'https://frontend.test',
+    ])
+        ->assertOk()
+        ->assertJsonPath('message', 'Logged out.');
+
+    expect(auth()->guard('web')->check())->toBeFalse();
 });
 
 it('validates forgot password payload', function (): void {
@@ -210,8 +290,8 @@ it('builds reset password notification links without configured frontend route',
             ->and($query['email'])->toBe('john@example.com')
             ->and($query['token'])->toBeString()->not->toBeEmpty();
 
-        if (! app('router')->has('password.reset')) {
-            expect($actionUrl)->toStartWith(rtrim((string) config('app.url'), '/') . '/reset-password?');
+        if (!app('router')->has('password.reset')) {
+            expect($actionUrl)->toStartWith(mb_rtrim((string) config('app.url'), '/') . '/reset-password?');
         }
 
         return true;
@@ -395,7 +475,7 @@ it('requires authentication on verify email route', function (): void {
     ]);
 
     $url = URL::temporarySignedRoute('auth.verification.verify', now()->addMinutes(5), [
-        'id' => $user->id,
+        'id' => $user->getKey(),
         'hash' => sha1($user->getEmailForVerification()),
     ]);
 
@@ -413,7 +493,7 @@ it('rejects verify email requests with invalid signatures', function (): void {
     $token = $user->createToken('api')->plainTextToken;
 
     $unsignedUrl = route('auth.verification.verify', [
-        'id' => $user->id,
+        'id' => $user->getKey(),
         'hash' => sha1($user->getEmailForVerification()),
     ]);
 
@@ -432,7 +512,7 @@ it('rejects verify email requests when the hash does not match the user email', 
     $token = $user->createToken('api')->plainTextToken;
 
     $url = URL::temporarySignedRoute('auth.verification.verify', now()->addMinutes(5), [
-        'id' => $user->id,
+        'id' => $user->getKey(),
         'hash' => sha1('wrong@example.com'),
     ]);
 
@@ -452,7 +532,7 @@ it('verifies email from a valid signed request', function (): void {
     $token = $user->createToken('api')->plainTextToken;
 
     $url = URL::temporarySignedRoute('auth.verification.verify', now()->addMinutes(5), [
-        'id' => $user->id,
+        'id' => $user->getKey(),
         'hash' => sha1($user->getEmailForVerification()),
     ]);
 

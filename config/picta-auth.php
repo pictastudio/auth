@@ -1,5 +1,7 @@
 <?php
 
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+
 return [
     'guard' => env('AUTH_LIBRARY_GUARD', env('AUTH_GUARD', 'web')),
 
@@ -38,8 +40,9 @@ return [
     'routes' => [
         'prefix' => 'api/auth',
         'middleware' => ['api'],
-        'auth_middleware' => ['api', 'auth:sanctum'],
-        'verification_middleware' => ['api', 'auth:sanctum', 'signed', 'throttle:6,1'],
+        'stateful_middleware' => [EnsureFrontendRequestsAreStateful::class],
+        'auth_middleware' => ['auth:sanctum'],
+        'verification_middleware' => ['auth:sanctum', 'signed', 'throttle:6,1'],
         'default_reset_password_path' => '/reset-password',
     ],
 
@@ -62,5 +65,6 @@ return [
     'sanctum' => [
         'token_name' => env('AUTH_LIBRARY_TOKEN_NAME', 'auth-token'),
         'abilities' => ['*'],
+        'issue_token_by_default' => env('AUTH_LIBRARY_ISSUE_TOKEN_BY_DEFAULT'),
     ],
 ];
