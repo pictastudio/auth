@@ -16,7 +16,7 @@ it('runs the command to generate permissions', function (): void {
     config()->set('picta-auth.permissions.models', ['post']);
     config()->set('picta-auth.permissions.actions', ['view']);
     config()->set('picta-auth.roles', [
-        'admin' => ['all_permissions' => true]
+        'admin' => ['all_permissions' => true],
     ]);
 
     artisan('auth:permissions:generate')

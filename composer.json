@@ -56,7 +56,8 @@
     },
     "scripts": {
         "test": "vendor/bin/pest",
-        "test-coverage": "vendor/bin/pest --coverage",
+        "test:parallel": "vendor/bin/pest --parallel",
+        "test:coverage": "vendor/bin/pest --coverage",
         "format": "vendor/bin/pint"
     },
     "extra": {
