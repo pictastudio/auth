@@ -37,22 +37,21 @@ Permissions are generated from `config/picta-auth.php` under `picta-auth.permiss
 
 ```php
 return [
-    'library' => [
-        'permissions' => [
-            'models' => [
-                'post' => \App\Models\Post::class,
-                \App\Models\Comment::class,
-            ],
-            'actions' => [
-                'view-any',
-                'view',
-                'create',
-                'show',
-                'update',
-                'delete',
-                'force-delete',
-                'restore',
-            ],
+    'permissions' => [
+        'models' => [
+            'post' => \App\Models\Post::class,
+            \App\Models\Comment::class,
+        ],
+
+        'actions' => [
+            'view-any',
+            'view',
+            'create',
+            'show',
+            'update',
+            'delete',
+            'force-delete',
+            'restore',
         ],
     ],
 ];
@@ -62,11 +61,9 @@ For API-only projects, you can also point notification links to frontend routes:
 
 ```php
 return [
-    'library' => [
-        'frontend_urls' => [
-            'reset_password' => env('AUTH_LIBRARY_FRONTEND_RESET_PASSWORD_URL'),
-            'email_verification' => env('AUTH_LIBRARY_FRONTEND_EMAIL_VERIFICATION_URL'),
-        ],
+    'frontend_urls' => [
+        'reset_password' => env('AUTH_LIBRARY_FRONTEND_RESET_PASSWORD_URL'),
+        'email_verification' => env('AUTH_LIBRARY_FRONTEND_EMAIL_VERIFICATION_URL'),
     ],
 ];
 ```
@@ -79,9 +76,7 @@ Password reset validation rules are configurable via `picta-auth.password_rules`
 
 ```php
 return [
-    'library' => [
-        'password_rules' => ['required', 'string', 'confirmed', 'min:12'],
-    ],
+    'password_rules' => ['required', 'string', 'confirmed', 'min:12'],
 ];
 ```
 

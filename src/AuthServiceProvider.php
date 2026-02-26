@@ -50,7 +50,7 @@ class AuthServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/picta-auth.php', 'picta-auth');
+        $this->replaceConfigRecursivelyFrom(__DIR__ . '/../config/picta-auth.php', 'picta-auth');
 
         $this->app->singleton(PermissionNameResolver::class);
         $this->app->singleton(Authorization::class);
