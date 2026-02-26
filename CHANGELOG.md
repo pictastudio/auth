@@ -2,6 +2,14 @@
 
 All notable changes to `auth` will be documented in this file.
 
+## v0.1.1 - 2026-02-26
+
+### What's Changed
+
+- code cleanup
+
+**Full Changelog**: https://github.com/pictastudio/auth/compare/v0.1.0...v0.1.1
+
 ## v0.1.0 - 2026-02-25
 
 ### What's in this release
