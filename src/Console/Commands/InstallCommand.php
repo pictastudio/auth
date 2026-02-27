@@ -19,6 +19,9 @@ class InstallCommand extends Command
         $this->components->info('Publishing auth configuration...');
         $this->call('vendor:publish', ['--tag' => 'auth-config']);
 
+        $this->components->info('Publishing cors configuration...');
+        $this->call('config:publish', ['name' => 'cors']);
+
         if (confirm('Do you want to publish bruno api files?', false)) {
             $this->components->info('Publishing bruno api files...');
             $this->call('vendor:publish', ['--tag' => 'auth-bruno']);
