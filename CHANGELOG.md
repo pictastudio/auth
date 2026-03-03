@@ -2,6 +2,12 @@
 
 All notable changes to `auth` will be documented in this file.
 
+## v0.1.4 - 2026-03-03
+
+put sanctum/csrf-cookie under api/auth/csrf-cookie
+
+**Full Changelog**: https://github.com/pictastudio/auth/compare/v0.1.3...v0.1.4
+
 ## v0.1.3 - 2026-02-26
 
 **Full Changelog**: https://github.com/pictastudio/auth/compare/v0.1.2...v0.1.3
