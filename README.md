@@ -177,7 +177,7 @@ Example `config/cors.php`:
 
 ```php
 return [
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'api/auth/csrf-cookie'],
     'allowed_methods' => ['*'],
     'allowed_origins' => ['http://app.test', 'http://localhost:3000'],
     'allowed_headers' => ['*'],
@@ -188,13 +188,14 @@ return [
 Notes:
 
 - Keep `picta-auth.routes.stateful_middleware` enabled (default).
+- The Sanctum CSRF route is exposed under the same prefix as your auth routes (`GET /api/auth/csrf-cookie` by default).
 - The package will default `POST /api/auth/login` to cookie auth for these stateful frontend requests.
 - For localhost-only development, you can leave `SESSION_DOMAIN` unset.
 - For production subdomains, use a shared session domain (for example `.example.com`).
 
 ### 2. Frontend request flow
 
-1. Get CSRF cookie: `GET /sanctum/csrf-cookie` with credentials.
+1. Get CSRF cookie: `GET /api/auth/csrf-cookie` with credentials.
 2. Login: `POST /api/auth/login` with email/password and credentials.
 3. Read current user: `GET /api/auth/me` with credentials.
 4. Logout: `POST /api/auth/logout` with credentials.
@@ -211,7 +212,7 @@ const api = axios.create({
 });
 
 export async function login(email: string, password: string) {
-  await api.get('/sanctum/csrf-cookie');
+  await api.get('/api/auth/csrf-cookie');
 
   await api.post('/api/auth/login', { email, password });
 
@@ -230,7 +231,7 @@ export async function logout() {
 const API_BASE = 'http://api.test';
 
 export async function login(email: string, password: string) {
-  await fetch(`${API_BASE}/sanctum/csrf-cookie`, {
+  await fetch(`${API_BASE}/api/auth/csrf-cookie`, {
     method: 'GET',
     credentials: 'include',
   });

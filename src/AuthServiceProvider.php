@@ -51,6 +51,7 @@ class AuthServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->replaceConfigRecursivelyFrom(__DIR__ . '/../config/picta-auth.php', 'picta-auth');
+        $this->syncSanctumPrefixWithAuthRoutes();
 
         $this->app->singleton(PermissionNameResolver::class);
         $this->app->singleton(Authorization::class);
@@ -82,6 +83,12 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->configureResetPasswordFrontendUrl();
         $this->configureEmailVerificationFrontendUrl();
+    }
+
+    private function syncSanctumPrefixWithAuthRoutes(): void
+    {
+        $prefix = trim((string) config('picta-auth.routes.prefix', 'auth'), '/');
+        config()->set('sanctum.prefix', $prefix);
     }
 
     private function configureResetPasswordFrontendUrl(): void

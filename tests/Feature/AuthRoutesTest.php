@@ -7,6 +7,10 @@ use PictaStudio\Auth\Tests\Support\Models\{User, UserWithoutSanctum, UserWithout
 
 use function Pest\Laravel\{getJson, postJson, withHeader};
 
+it('registers sanctum csrf cookie route under the auth prefix', function (): void {
+    expect(route('sanctum.csrf-cookie', [], false))->toBe('/api/auth/csrf-cookie');
+});
+
 it('validates login payload', function (): void {
     postJson(route('auth.login'))
         ->assertUnprocessable()
