@@ -2,6 +2,25 @@
 
 All notable changes to `auth` will be documented in this file.
 
+## v0.1.5 - 2026-03-05
+
+### What's Changed
+
+#### Features
+
+- **Add registration endpoint** - introduce `POST /api/auth/register` with validation, user creation, and optional verification email dispatch
+- **Support both auth modes on register** - registration now mirrors login behavior, defaulting to cookie auth for stateful frontend requests and token auth otherwise, with `issue_token` and `token_name` overrides
+
+#### Tests
+
+- **Expand auth route coverage** - add register route tests for validation, duplicate emails, model/guard errors, cookie mode, token mode, and forced token issuance
+
+#### Docs
+
+- **Document registration flow** - update README and add a Bruno request for `/register`
+
+**Full Changelog**: https://github.com/pictastudio/auth/compare/v0.1.4...v0.1.5
+
 ## v0.1.4 - 2026-03-03
 
 put sanctum/csrf-cookie under api/auth/csrf-cookie
