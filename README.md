@@ -7,7 +7,7 @@ Opinionated API authentication and authorization for Laravel using Sanctum and S
 
 ## Features
 
-- Common API auth routes: login, logout, current user, forgot/reset password, email verification.
+- Common API auth routes: register, login, logout, current user, forgot/reset password, email verification.
 - Dual-mode Sanctum authentication:
   - Stateful cookie/session auth for first-party frontend requests.
   - Bearer token auth for third-party API consumers.
@@ -134,6 +134,7 @@ auth_authorize(\App\Models\Post::class, 'update'); // defaults to auth()->guard(
 
 Mounted under `/api/auth` by default:
 
+- `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
 - `POST /api/auth/logout`
@@ -141,6 +142,22 @@ Mounted under `/api/auth` by default:
 - `POST /api/auth/reset-password`
 - `POST /api/auth/email/verification-notification`
 - `GET /api/auth/verify-email/{id}/{hash}`
+
+## Registration
+
+`POST /api/auth/register` accepts:
+
+- `name` (`string`, required)
+- `email` (`email`, required, unique)
+- `password` (`string`, required, defaults to `picta-auth.password_rules`)
+- `password_confirmation` (required when using the default `confirmed` password rule)
+
+Optional payload fields:
+
+- `issue_token` (`boolean`): force token issuance on/off.
+- `token_name` (`string`): token name when issuing bearer tokens.
+
+Like login, registration defaults to cookie auth for stateful frontend requests and bearer token auth for non-stateful requests.
 
 ## Login Modes
 

@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use PictaStudio\Auth\Http\Controllers\{AuthenticatedUserController, EmailVerificationNotificationController, ForgotPasswordController, LoginController, LogoutController, ResetPasswordController, VerifyEmailController};
+use PictaStudio\Auth\Http\Controllers\{AuthenticatedUserController, EmailVerificationNotificationController, ForgotPasswordController, LoginController, LogoutController, RegisterController, ResetPasswordController, VerifyEmailController};
 
 $routeMiddleware = array_values(array_unique(array_merge(
     (array) config('picta-auth.routes.middleware', ['api']),
@@ -11,6 +11,7 @@ $routeMiddleware = array_values(array_unique(array_merge(
 Route::prefix(config('picta-auth.routes.prefix', 'auth'))
     ->middleware($routeMiddleware)
     ->group(function (): void {
+        Route::post('/register', RegisterController::class)->name('auth.register');
         Route::post('/login', LoginController::class)->name('auth.login');
         Route::post('/forgot-password', ForgotPasswordController::class)->name('auth.password.email');
         Route::post('/reset-password', ResetPasswordController::class)->name('auth.password.reset');

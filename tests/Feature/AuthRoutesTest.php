@@ -11,6 +11,132 @@ it('registers sanctum csrf cookie route under the auth prefix', function (): voi
     expect(route('sanctum.csrf-cookie', [], false))->toBe('/api/auth/csrf-cookie');
 });
 
+it('validates register payload', function (): void {
+    postJson(route('auth.register'))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['name', 'email', 'password']);
+});
+
+it('requires unique email on register', function (): void {
+    User::query()->create([
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => Hash::make('secret-password'),
+    ]);
+
+    postJson(route('auth.register'), [
+        'name' => 'Another John',
+        'email' => 'john@example.com',
+        'password' => 'secret-password',
+        'password_confirmation' => 'secret-password',
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['email']);
+});
+
+it('returns an error when the auth model cannot be resolved on register', function (): void {
+    config()->set('auth.guards.web.provider', 'missing-provider');
+
+    postJson(route('auth.register'), [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => 'secret-password',
+        'password_confirmation' => 'secret-password',
+    ])
+        ->assertStatus(500)
+        ->assertJsonPath('message', 'Unable to resolve the auth model for the configured guard.');
+});
+
+it('returns an error when the auth model does not support sanctum tokens on register', function (): void {
+    config()->set('auth.providers.users.model', UserWithoutSanctum::class);
+
+    postJson(route('auth.register'), [
+        'name' => 'No Token User',
+        'email' => 'notoken@example.com',
+        'password' => 'secret-password',
+        'password_confirmation' => 'secret-password',
+    ])
+        ->assertStatus(500)
+        ->assertJsonPath('message', 'The auth model must use Laravel Sanctum HasApiTokens.');
+
+    expect(UserWithoutSanctum::query()->count())->toBe(0);
+});
+
+it('registers a user and creates a sanctum token', function (): void {
+    $response = postJson(route('auth.register'), [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => 'secret-password',
+        'password_confirmation' => 'secret-password',
+        'token_name' => 'mobile-device',
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('authenticated_via', 'token')
+        ->assertJsonPath('token_type', 'Bearer')
+        ->assertJsonPath('user.email', 'john@example.com');
+
+    expect($response->json('token'))->toBeString()->not->toBeEmpty();
+
+    $createdUser = User::query()->where('email', 'john@example.com')->first();
+    $token = PersonalAccessToken::query()->first();
+
+    expect($createdUser)->not->toBeNull()
+        ->and($token)->not->toBeNull()
+        ->and($token?->tokenable_id)->toBe($createdUser?->getKey())
+        ->and($token?->tokenable_type)->toBe(User::class)
+        ->and($token?->name)->toBe('mobile-device');
+});
+
+it('registers with cookie auth by default for stateful frontend requests', function (): void {
+    config()->set('sanctum.stateful', ['frontend.test']);
+
+    postJson(route('auth.register'), [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => 'secret-password',
+        'password_confirmation' => 'secret-password',
+    ], [
+        'Origin' => 'https://frontend.test',
+    ])
+        ->assertCreated()
+        ->assertJsonPath('authenticated_via', 'cookie');
+
+    $createdUser = User::query()->where('email', 'john@example.com')->first();
+
+    expect($createdUser)->not->toBeNull()
+        ->and(PersonalAccessToken::query()->count())->toBe(0);
+
+    getJson(route('auth.me'), [
+        'Origin' => 'https://frontend.test',
+    ])
+        ->assertOk()
+        ->assertJsonPath('user.id', $createdUser?->getKey());
+});
+
+it('can force token issuance on register for stateful frontend requests', function (): void {
+    config()->set('sanctum.stateful', ['frontend.test']);
+
+    $response = postJson(route('auth.register'), [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => 'secret-password',
+        'password_confirmation' => 'secret-password',
+        'issue_token' => true,
+        'token_name' => 'frontend-device',
+    ], [
+        'Origin' => 'https://frontend.test',
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('authenticated_via', 'token')
+        ->assertJsonPath('token_type', 'Bearer')
+        ->assertJsonPath('user.email', 'john@example.com');
+
+    expect($response->json('token'))->toBeString()->not->toBeEmpty()
+        ->and(PersonalAccessToken::query()->count())->toBe(1);
+});
+
 it('validates login payload', function (): void {
     postJson(route('auth.login'))
         ->assertUnprocessable()

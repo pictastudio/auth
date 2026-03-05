@@ -1,0 +1,33 @@
+meta {
+  name: Register
+  type: http
+  seq: 0
+}
+
+post {
+  url: {{baseUrl}}/register
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "John Doe",
+    "email": "{{email}}",
+    "password": "{{password}}",
+    "password_confirmation": "{{password}}",
+    "token_name": "bruno-local"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body && res.body.token) {
+    bru.setGlobalEnvVar("token", res.body.token);
+    bru.setEnvVar("token", res.body.token);
+  }
+}
