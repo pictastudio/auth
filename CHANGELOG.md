@@ -2,6 +2,22 @@
 
 All notable changes to `auth` will be documented in this file.
 
+## v0.1.6 - 2026-03-09
+
+### What's Changed
+
+#### Features
+
+- **Merge auth config recursively** - nested `picta-auth` application config now overrides package defaults without replacing sibling keys
+- **Namespace publish tags** - config and Bruno publish groups now use `picta-auth-config` and `picta-auth-bruno`
+- **Normalize Sanctum prefix trimming** - use `mb_trim` when syncing the configured auth route prefix into Sanctum
+
+#### Docs
+
+- **Update release notes** - document the recursive config merge and publish tag renames for this patch release
+
+**Full Changelog**: https://github.com/pictastudio/auth/compare/v0.1.5...v0.1.6
+
 ## v0.1.5 - 2026-03-05
 
 ### What's Changed
