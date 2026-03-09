@@ -50,7 +50,7 @@ class AuthServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->replaceConfigRecursivelyFrom(__DIR__ . '/../config/picta-auth.php', 'picta-auth');
+        $this->mergeAuthConfig();
         $this->syncSanctumPrefixWithAuthRoutes();
 
         $this->app->singleton(PermissionNameResolver::class);
@@ -62,11 +62,11 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../config/picta-auth.php' => config_path('picta-auth.php'),
-        ], 'auth-config');
+        ], 'picta-auth-config');
 
         $this->publishes([
             __DIR__ . '/../bruno/auth' => base_path('bruno/auth'),
-        ], 'auth-bruno');
+        ], 'picta-auth-bruno');
 
         $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
         $this->configureNotificationFrontendUrls();
@@ -85,9 +85,51 @@ class AuthServiceProvider extends ServiceProvider
         $this->configureEmailVerificationFrontendUrl();
     }
 
+    private function mergeAuthConfig(): void
+    {
+        $packageConfig = require __DIR__ . '/../config/picta-auth.php';
+        $applicationConfig = config('picta-auth', []);
+
+        config()->set(
+            'picta-auth',
+            $this->mergeConfigRecursively(
+                $packageConfig,
+                is_array($applicationConfig) ? $applicationConfig : []
+            )
+        );
+    }
+
+    /**
+     * Merge associative config arrays recursively while preserving list overrides.
+     *
+     * @param  array<string, mixed>  $defaults
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
+    private function mergeConfigRecursively(array $defaults, array $overrides): array
+    {
+        foreach ($overrides as $key => $value) {
+            if (
+                array_key_exists($key, $defaults)
+                && is_array($defaults[$key])
+                && is_array($value)
+                && !array_is_list($defaults[$key])
+                && !array_is_list($value)
+            ) {
+                $defaults[$key] = $this->mergeConfigRecursively($defaults[$key], $value);
+
+                continue;
+            }
+
+            $defaults[$key] = $value;
+        }
+
+        return $defaults;
+    }
+
     private function syncSanctumPrefixWithAuthRoutes(): void
     {
-        $prefix = trim((string) config('picta-auth.routes.prefix', 'auth'), '/');
+        $prefix = mb_trim((string) config('picta-auth.routes.prefix', 'auth'), '/');
         config()->set('sanctum.prefix', $prefix);
     }
 
