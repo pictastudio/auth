@@ -2,6 +2,17 @@
 
 All notable changes to `auth` will be documented in this file.
 
+## v0.1.7 - 2026-03-10
+
+### What's Changed
+
+#### Docs and Tooling
+
+- **Flatten Bruno auth request paths** - move the published auth request files from `bruno/auth/auth/` to `bruno/auth/`
+- **Simplify collection layout** - keep the auth requests alongside `bruno.json` and the environment folder for a cleaner published structure
+
+**Full Changelog**: https://github.com/pictastudio/auth/compare/v0.1.6...v0.1.7
+
 ## v0.1.6 - 2026-03-09
 
 ### What's Changed
