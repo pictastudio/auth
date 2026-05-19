@@ -2,6 +2,28 @@
 
 All notable changes to `auth` will be documented in this file.
 
+## v0.1.8 - 2026-05-19
+
+### What's Changed
+
+This patch release adds Laravel 13 compatibility and publishes a migration for removing Spatie permission pivot foreign keys while preserving data.
+
+### Fixes
+
+- Added a package migration that rebuilds Spatie permission pivot tables without foreign keys, with rollback support to restore them.
+
+### Tooling
+
+- Added Laravel 13 support to the Illuminate constraints and updated the dev stack for Orchestra Testbench 11 and Pest Laravel 4.1.
+- Added release-publisher metadata for future release automation.
+
+### Tests
+
+- Added migration coverage for removing and restoring permission pivot foreign keys.
+- Verified the package test suite against Laravel 13 with `composer test -- --colors=never`.
+
+**Full Changelog**: https://github.com/pictastudio/auth/compare/v0.1.7...v0.1.8
+
 ## v0.1.7 - 2026-03-10
 
 ### What's Changed
