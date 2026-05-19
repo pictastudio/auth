@@ -68,6 +68,7 @@ class AuthServiceProvider extends ServiceProvider
             __DIR__ . '/../bruno/auth' => base_path('bruno/auth'),
         ], 'picta-auth-bruno');
 
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
         $this->configureNotificationFrontendUrls();
 
