@@ -46,6 +46,17 @@ return [
         'default_reset_password_path' => '/reset-password',
     ],
 
+    'users' => [
+        'routes' => [
+            'prefix' => 'api/users',
+        ],
+
+        'pagination' => [
+            'per_page' => 15,
+            'max_per_page' => 100,
+        ],
+    ],
+
     'password_broker' => env('AUTH_LIBRARY_PASSWORD_BROKER', 'users'),
 
     'password_rules' => [
