@@ -2,6 +2,24 @@
 
 All notable changes to `auth` will be documented in this file.
 
+## v0.2.0 - 2026-07-09
+
+### What's Changed
+
+This minor release adds protected user-management CRUD APIs outside the auth route group, with configurable pagination and Spatie permission enforcement for managing users and roles.
+
+### Features
+
+- Added `/api/users` CRUD routes protected by Sanctum auth and `user:*` Spatie permissions.
+- Added user creation and update support for `name`, `email`, hashed passwords, and optional role syncing by role name.
+- Added configurable user route prefix and pagination defaults through `picta-auth.users`.
+
+### Tests
+
+- Added feature coverage for authentication, authorization denial, pagination, validation, create/show/update/delete flows, and role syncing.
+
+**Full Changelog**: https://github.com/pictastudio/auth/compare/v0.1.8...v0.2.0
+
 ## v0.1.8 - 2026-05-19
 
 ### What's Changed
